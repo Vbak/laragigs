@@ -1,41 +1,32 @@
 <?php
-/**
- * Created by vbak with PhpStorm.
- *
- * License notice:
- * Made for firstygroup. Do whatever you want and good luck!
- * User: vbak
- * Date: 6/21/23
- * Time: 4:13 PM
- */
+
 namespace App\Models;
 
-class Listing {
-    public static function all(){
-        return array(
-            [
-                'id' => 1,
-                'title' => 'first post',
-                'description' => 'asdasdasdasdasdasd'
-            ],
-            [
-                'id' => 2,
-                'title' => 'second post',
-                'description' => 'lkl;kxcl;vkxcl;vkxcl;vl;xcv'
-            ]
-        );
+use http\Exception\BadMethodCallException;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
-    }
+class Listing extends Model
+{
+    use HasFactory;
 
+    protected $fillable = ['title','company','location','website','email','description','tags','logo','user_id'];
 
-    public static function find($id) {
-        $listings = self::all();
-
-        foreach ($listings as $listing) {
-            if($listing['id'] == $id){
-                return $listing;
-            }
+    public function scopeFilter($query, array $filters)
+    {
+        if($filters['tag'] ?? false){
+            $query->where('tags','like','%'.$filters['tag'].'%');
+        }
+        if($filters['search'] ?? false){
+            $query->where('title','like','%'.$filters['search'].'%')
+            ->orWhere('description','like','%'.$filters['search'].'%')
+            ->orWhere('tags','like','%'.$filters['search'].'%');
         }
     }
 
+    // Relationship to User
+    public function user()
+    {
+        return $this->belongsTo(User::class,'user_id');
+    }
 }
